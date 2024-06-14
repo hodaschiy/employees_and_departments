@@ -22,13 +22,13 @@ namespace WebApp.Controllers
         // GET: Departments
         public async Task<IActionResult> Index()
         {
-            List<Department> webAppContext = _context.Department.ToList();
-            for (int i = 0; i < webAppContext.Count; i++)
+            List<Department> webAppContext = await _context.Department.ToListAsync();
+            List<DepartmentSimpleView> data = new List<DepartmentSimpleView>();
+            foreach (Department item in webAppContext)
             {
-                ViewData[webAppContext[i].Name] = webAppContext[i].Tree!.Select(x => x).Where(x => x == '.').Count();
-                //webAppContext[i].Name = String.Join("", Enumerable.Repeat("__", webAppContext[i].Tree!.Select(x => x).Where(x => x == '.').Count() )).Replace('_', ' ') + webAppContext[i].Name;
+                data.Add(new DepartmentSimpleView(item, _context));
             }
-            return View(webAppContext.OrderBy(x => x.Tree));
+            return View(data.OrderBy(x => x.Tree));
         }
 
         // GET: Departments/Details/5
@@ -47,7 +47,7 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            return View(department);
+            return View(new DepartmentDetailedView(department, _context));
         }
 
         // GET: Departments/Create

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebApp.Models.Department>
+﻿@model IEnumerable<WebApp.Models.DepartmentSimpleView>
 
 @{
     ViewData["Title"] = "Index";
@@ -22,7 +22,7 @@
                 @Html.DisplayNameFor(model => model.Tree)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Parent)
+                @Html.DisplayNameFor(model => model.ParentName)
             </th>
             <th></th>
         </tr>
@@ -30,10 +30,10 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
-            <td style="padding-left: @((int)ViewData[@item.Name]*15)px">@item.Name</td>
-            <td>@item.ChiefId</td>
+            <td style="padding-left: @(@item.Level*15)px">@item.Name</td>
+            <td>@item.ChiefName</td>
             <td>@item.Tree</td>
-            <td>@Model.Where(x=> x.Id == item.ParentId).Select(x => x.Name).FirstOrDefault("")</td>
+            <td>@item.ParentName</td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |

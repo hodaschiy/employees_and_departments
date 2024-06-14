@@ -1,4 +1,4 @@
-﻿@model WebApp.Models.Department
+﻿@model WebApp.Models.DepartmentDetailedView
 
 @{
     ViewData["Title"] = "Details";
@@ -17,10 +17,10 @@
             @Html.DisplayFor(model => model.Name)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ChiefId)
+            @Html.DisplayNameFor(model => model.ChiefName)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ChiefId)
+            @Html.DisplayFor(model => model.ChiefName)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Tree)
@@ -29,13 +29,57 @@
             @Html.DisplayFor(model => model.Tree)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Parent)
+            @Html.DisplayNameFor(model => model.ParentName)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Parent.Id)
+            @Html.DisplayFor(model => model.ParentName)
         </dd>
     </dl>
 </div>
+@if (Model.ChildDepartments.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Tree)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ChildDepartments)
+            {
+                <tr>
+                    <td style="padding-left: @((@item.Item4-Model.Level-1)*15)px">@item.Item2</td>
+                    <td>@item.Item3</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@if (Model.Employees.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Employees)
+            {
+                <tr>
+                    <td>@item.Item2</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
