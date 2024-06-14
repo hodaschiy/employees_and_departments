@@ -10,57 +10,28 @@ using WebApp.Models;
 
 namespace WebApp.Controllers
 {
-    public class MoviesController : Controller
+    public class DepartmentsController : Controller
     {
         private readonly WebAppContext _context;
 
-        public MoviesController(WebAppContext context)
+        public DepartmentsController(WebAppContext context)
         {
             _context = context;
         }
 
-        // GET: Movies
-        public async Task<IActionResult> Index(string movieGenre, string searchString)
+        // GET: Departments
+        public async Task<IActionResult> Index()
         {
-            if (_context.Movie == null)
+            List<Department> webAppContext = _context.Department.ToList();
+            for (int i = 0; i < webAppContext.Count; i++)
             {
-                return Problem("Entity set 'MvcMovieContext.Movie'  is null.");
+                ViewData[webAppContext[i].Name] = webAppContext[i].Tree!.Select(x => x).Where(x => x == '.').Count();
+                //webAppContext[i].Name = String.Join("", Enumerable.Repeat("__", webAppContext[i].Tree!.Select(x => x).Where(x => x == '.').Count() )).Replace('_', ' ') + webAppContext[i].Name;
             }
-
-            // Use LINQ to get list of genres.
-            IQueryable<string> genreQuery = from m in _context.Movie
-                                            orderby m.Genre
-                                            select m.Genre;
-            var movies = from m in _context.Movie
-                         select m;
-
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                movies = movies.Where(s => s.Title!.Contains(searchString));
-            }
-
-            if (!string.IsNullOrEmpty(movieGenre))
-            {
-                movies = movies.Where(x => x.Genre == movieGenre);
-            }
-
-            var movieGenreVM = new MovieGenreViewModel
-            {
-                Genres = new SelectList(await genreQuery.Distinct().ToListAsync()),
-                Movies = await movies.ToListAsync()
-            };
-
-            return View(movieGenreVM);
+            return View(webAppContext.OrderBy(x => x.Tree));
         }
 
-        [HttpPost]
-        public string Index(string searchString, bool notUsed)
-        {
-            return "From [HttpPost]Index: filter on " + searchString;
-        }
-
-
-        // GET: Movies/Details/5
+        // GET: Departments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -68,39 +39,42 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var movie = await _context.Movie
+            var department = await _context.Department
+                .Include(d => d.Parent)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (movie == null)
+            if (department == null)
             {
                 return NotFound();
             }
 
-            return View(movie);
+            return View(department);
         }
 
-        // GET: Movies/Create
+        // GET: Departments/Create
         public IActionResult Create()
         {
+            ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id");
             return View();
         }
 
-        // POST: Movies/Create
+        // POST: Departments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,ReleaseDate,Genre,Price")] Movie movie)
+        public async Task<IActionResult> Create([Bind("Id,Name,ChiefId,ParentId,Tree")] Department department)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(movie);
+                _context.Add(department);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(movie);
+            ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id", department.ParentId);
+            return View(department);
         }
 
-        // GET: Movies/Edit/5
+        // GET: Departments/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -108,22 +82,23 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var movie = await _context.Movie.FindAsync(id);
-            if (movie == null)
+            var department = await _context.Department.FindAsync(id);
+            if (department == null)
             {
                 return NotFound();
             }
-            return View(movie);
+            ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id", department.ParentId);
+            return View(department);
         }
 
-        // POST: Movies/Edit/5
+        // POST: Departments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ReleaseDate,Genre,Price")] Movie movie)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ChiefId,ParentId,Tree")] Department department)
         {
-            if (id != movie.Id)
+            if (id != department.Id)
             {
                 return NotFound();
             }
@@ -132,12 +107,12 @@ namespace WebApp.Controllers
             {
                 try
                 {
-                    _context.Update(movie);
+                    _context.Update(department);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MovieExists(movie.Id))
+                    if (!DepartmentExists(department.Id))
                     {
                         return NotFound();
                     }
@@ -148,10 +123,11 @@ namespace WebApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(movie);
+            ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id", department.ParentId);
+            return View(department);
         }
 
-        // GET: Movies/Delete/5
+        // GET: Departments/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -159,34 +135,35 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var movie = await _context.Movie
+            var department = await _context.Department
+                .Include(d => d.Parent)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (movie == null)
+            if (department == null)
             {
                 return NotFound();
             }
 
-            return View(movie);
+            return View(department);
         }
 
-        // POST: Movies/Delete/5
+        // POST: Departments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var movie = await _context.Movie.FindAsync(id);
-            if (movie != null)
+            var department = await _context.Department.FindAsync(id);
+            if (department != null)
             {
-                _context.Movie.Remove(movie);
+                _context.Department.Remove(department);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool MovieExists(int id)
+        private bool DepartmentExists(int id)
         {
-            return _context.Movie.Any(e => e.Id == id);
+            return _context.Department.Any(e => e.Id == id);
         }
     }
 }

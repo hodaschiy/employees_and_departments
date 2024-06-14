@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebApp.Data;
@@ -11,9 +12,11 @@ using WebApp.Data;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(WebAppContext))]
-    partial class WebAppContextModelSnapshot : ModelSnapshot
+    [Migration("20240614141350_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,15 +40,19 @@ namespace WebApp.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("ParentDepId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("ParentId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Tree")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentDepId");
 
                     b.ToTable("Department");
                 });
@@ -83,11 +90,11 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Department", b =>
                 {
-                    b.HasOne("WebApp.Models.Department", "Parent")
+                    b.HasOne("WebApp.Models.Department", "ParentDep")
                         .WithMany("ChildDepartments")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentDepId");
 
-                    b.Navigation("Parent");
+                    b.Navigation("ParentDep");
                 });
 
             modelBuilder.Entity("WebApp.Models.Employee", b =>

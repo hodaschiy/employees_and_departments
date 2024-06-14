@@ -92,6 +92,7 @@ namespace WebApp.Data
         {
             builder.ApplyUtcDateTimeConverter();//Put before seed data and after model creation
         }
-        public DbSet<WebApp.Models.Movie> Movie { get; set; } = default!;
+        public DbSet<WebApp.Models.Department> Department { get; set; } = default!;
+        public DbSet<WebApp.Models.Employee> Employee { get; set; } = default!;
     }
 }
