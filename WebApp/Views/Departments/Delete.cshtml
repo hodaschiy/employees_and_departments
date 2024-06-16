@@ -1,4 +1,4 @@
-﻿@model WebApp.Models.Department
+﻿@model WebApp.Models.DepartmentView
 
 @{
     ViewData["Title"] = "Delete";
@@ -11,32 +11,87 @@
     <h4>Department</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Tree)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Tree)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Chief)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Chief.Id)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Chief.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Parent)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Parent.Id)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Parent.Name)
         </dd>
     </dl>
-    
+</div>
+
+@if (Model.HChildDepartments.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name </th>
+                <th>Tree</th>
+                <th>Chief</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.HChildDepartments)
+            {
+                <tr>
+                    <td style=" padding-left : @((item.Level-Model.Level)*15)px">@item.Name</td>
+                    <td>@item.Tree</td>
+                    <td>@item.Chief.Name</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (Model.Employees.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Employees)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<div>
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |

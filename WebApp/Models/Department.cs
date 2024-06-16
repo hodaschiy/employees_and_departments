@@ -47,7 +47,6 @@ namespace WebApp.Models
         public DepartmentView(Department dep, WebAppContext context) : base (dep)
         {
             HChildDepartments = context.Department.Where(dep => dep.Tree.StartsWith(Tree+'.')).OrderBy(dep => dep.Tree).Include(d => d.Chief).ToList();
-            //Level = Tree.Where(x => x == '.').Count();
         }
     }
 }

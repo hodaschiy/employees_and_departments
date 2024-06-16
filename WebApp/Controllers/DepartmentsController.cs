@@ -139,13 +139,14 @@ namespace WebApp.Controllers
             var department = await _context.Department
                 .Include(d => d.Chief)
                 .Include(d => d.Parent)
+                .Include(d => d.Employees)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (department == null)
             {
                 return NotFound();
             }
 
-            return View(department);
+            return View(new DepartmentView(department, _context));
         }
 
         // POST: Departments/Delete/5
