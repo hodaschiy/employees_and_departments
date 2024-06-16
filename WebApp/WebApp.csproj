@@ -4,7 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>294639be-64bf-4a1f-b727-98efdf2b283e</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Migrations\FileName.txt" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4">

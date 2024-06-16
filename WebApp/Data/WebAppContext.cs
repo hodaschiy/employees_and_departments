@@ -90,6 +90,7 @@ namespace WebApp.Data
         }
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Department>().HasOne(dep => dep.Chief).WithOne().HasForeignKey<Department>(dep => dep.ChiefId);
             builder.ApplyUtcDateTimeConverter();//Put before seed data and after model creation
         }
         public DbSet<WebApp.Models.Department> Department { get; set; } = default!;

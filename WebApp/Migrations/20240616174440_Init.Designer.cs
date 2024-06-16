@@ -12,7 +12,7 @@ using WebApp.Data;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(WebAppContext))]
-    [Migration("20240614141350_Init")]
+    [Migration("20240616174440_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -38,21 +38,21 @@ namespace WebApp.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ParentDepId")
-                        .HasColumnType("integer");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Tree")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentDepId");
+                    b.HasIndex("ChiefId")
+                        .IsUnique();
+
+                    b.HasIndex("ParentId");
 
                     b.ToTable("Department");
                 });
@@ -90,11 +90,17 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Department", b =>
                 {
-                    b.HasOne("WebApp.Models.Department", "ParentDep")
-                        .WithMany("ChildDepartments")
-                        .HasForeignKey("ParentDepId");
+                    b.HasOne("WebApp.Models.Employee", "Chief")
+                        .WithOne()
+                        .HasForeignKey("WebApp.Models.Department", "ChiefId");
 
-                    b.Navigation("ParentDep");
+                    b.HasOne("WebApp.Models.Department", "Parent")
+                        .WithMany("ChildDepartments")
+                        .HasForeignKey("ParentId");
+
+                    b.Navigation("Chief");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("WebApp.Models.Employee", b =>

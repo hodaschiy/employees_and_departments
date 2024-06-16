@@ -22,13 +22,8 @@ namespace WebApp.Controllers
         // GET: Departments
         public async Task<IActionResult> Index()
         {
-            List<Department> webAppContext = await _context.Department.ToListAsync();
-            List<DepartmentSimpleView> data = new List<DepartmentSimpleView>();
-            foreach (Department item in webAppContext)
-            {
-                data.Add(new DepartmentSimpleView(item, _context));
-            }
-            return View(data.OrderBy(x => x.Tree));
+            var webAppContext = _context.Department.Include(d => d.Chief).Include(d => d.Parent);
+            return View(await webAppContext.OrderBy(dep => dep.Tree).ToListAsync());
         }
 
         // GET: Departments/Details/5
@@ -40,19 +35,22 @@ namespace WebApp.Controllers
             }
 
             var department = await _context.Department
+                .Include(d => d.Chief)
                 .Include(d => d.Parent)
+                .Include(d => d.Employees)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (department == null)
             {
                 return NotFound();
             }
 
-            return View(new DepartmentDetailedView(department, _context));
+            return View(new DepartmentView(department, _context));
         }
 
         // GET: Departments/Create
         public IActionResult Create()
         {
+            ViewData["ChiefId"] = new SelectList(_context.Employee, "Id", "Id");
             ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id");
             return View();
         }
@@ -70,6 +68,7 @@ namespace WebApp.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ChiefId"] = new SelectList(_context.Employee, "Id", "Id", department.ChiefId);
             ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id", department.ParentId);
             return View(department);
         }
@@ -87,6 +86,7 @@ namespace WebApp.Controllers
             {
                 return NotFound();
             }
+            ViewData["ChiefId"] = new SelectList(_context.Employee, "Id", "Id", department.ChiefId);
             ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id", department.ParentId);
             return View(department);
         }
@@ -123,6 +123,7 @@ namespace WebApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ChiefId"] = new SelectList(_context.Employee, "Id", "Id", department.ChiefId);
             ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id", department.ParentId);
             return View(department);
         }
@@ -136,6 +137,7 @@ namespace WebApp.Controllers
             }
 
             var department = await _context.Department
+                .Include(d => d.Chief)
                 .Include(d => d.Parent)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (department == null)

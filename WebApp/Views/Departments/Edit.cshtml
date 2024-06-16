@@ -20,7 +20,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="ChiefId" class="control-label"></label>
-                <input asp-for="ChiefId" class="form-control" />
+                <select asp-for="ChiefId" class="form-control" asp-items="ViewBag.ChiefId"></select>
                 <span asp-validation-for="ChiefId" class="text-danger"></span>
             </div>
             <div class="form-group">

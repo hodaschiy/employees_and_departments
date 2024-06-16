@@ -1,4 +1,4 @@
-﻿@model WebApp.Models.DepartmentDetailedView
+﻿@model WebApp.Models.DepartmentView
 
 @{
     ViewData["Title"] = "Details";
@@ -17,64 +17,73 @@
             @Html.DisplayFor(model => model.Name)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ChiefName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ChiefName)
-        </dd>
-        <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Tree)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Tree)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ParentName)
+            @Html.DisplayNameFor(model => model.Chief)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ParentName)
+            @Html.DisplayFor(model => model.Chief.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Parent)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Parent.Name)
         </dd>
     </dl>
 </div>
-@if (Model.ChildDepartments.Count > 0)
+
+@if (Model.HChildDepartments.Count > 0)
 {
     <table class="table">
         <thead>
             <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Tree)
-                </th>
+                <th>Name </th>
+                <th>Tree</th>
+                <th>Chief</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.ChildDepartments)
+            @foreach (var item in Model.HChildDepartments)
             {
                 <tr>
-                    <td style="padding-left: @((@item.Item4-Model.Level-1)*15)px">@item.Item2</td>
-                    <td>@item.Item3</td>
+                    <td style=" padding-left : @((item.Level-Model.Level)*15)px">@item.Name</td>
+                    <td>@item.Tree</td>
+                    <td>@item.Chief.Name</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 }
-@if (Model.Employees.Count > 0)
-{
+
+@if (Model.Employees.Count > 0){
     <table class="table">
         <thead>
             <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
+                <th>Name</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model.Employees)
             {
                 <tr>
-                    <td>@item.Item2</td>
+                    <td>@item.Name</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
                 </tr>
             }
         </tbody>

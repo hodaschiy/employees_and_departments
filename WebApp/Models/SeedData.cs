@@ -27,6 +27,13 @@ namespace WebApp.Models
                 );
                 context.SaveChanges();
 
+                Department depr = new Department
+                {
+                    Id = 2,
+                    Name = "Производство",
+                    ParentId = 1
+                };
+
                 context.Department.AddRange(
                     new Department
                     {
@@ -41,6 +48,7 @@ namespace WebApp.Models
                         ParentId = 1
                     }
                 );
+
                 context.SaveChanges();
 
                 context.Department.AddRange(
@@ -101,20 +109,20 @@ namespace WebApp.Models
                 var employees = context.Employee.ToArray();
                 var departments = context.Department.ToArray();
                 for ( int i = 0; i < departments.Length; i++) {
-                    departments[i].ChiefId = employees.Where(empl => empl.DepartmentId == departments[i].Id).FirstOrDefault().Id;
+                    departments[i].ChiefId = employees.Where(empl => empl.Department == departments[i]).FirstOrDefault().Id;
                 }
                 context.UpdateRange(departments);
                 for (int i = 0; i < employees.Length; i++)
                 {
-                    employees[i].Tree = departments.Where(dep => dep.Id == employees[i].DepartmentId).FirstOrDefault().Tree;
+                    employees[i].Tree = departments.Where(dep => dep == employees[i].Department).FirstOrDefault()!.Tree;
                 }
-                employees[3].ChiefId = employees[1].Id;
-                employees[5].ChiefId = employees[2].Id;
-                employees[7].ChiefId = employees[0].Id;
-                employees[10].ChiefId = employees[1].Id;
-                employees[11].ChiefId = employees[5].Id;
-                employees[13].ChiefId = employees[7].Id;
-                employees[14].ChiefId = employees[9].Id;
+                employees[3].Chief = employees[1];
+                employees[5].Chief = employees[2];
+                employees[7].Chief = employees[0];
+                employees[10].Chief = employees[1];
+                employees[11].Chief = employees[5];
+                employees[13].Chief = employees[7];
+                employees[14].Chief = employees[9];
 
                 context.UpdateRange(employees);
                 context.SaveChanges();

@@ -35,7 +35,8 @@ namespace WebApp.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("integer");
@@ -44,6 +45,9 @@ namespace WebApp.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChiefId")
+                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -83,9 +87,15 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("WebApp.Models.Department", b =>
                 {
+                    b.HasOne("WebApp.Models.Employee", "Chief")
+                        .WithOne()
+                        .HasForeignKey("WebApp.Models.Department", "ChiefId");
+
                     b.HasOne("WebApp.Models.Department", "Parent")
                         .WithMany("ChildDepartments")
                         .HasForeignKey("ParentId");
+
+                    b.Navigation("Chief");
 
                     b.Navigation("Parent");
                 });

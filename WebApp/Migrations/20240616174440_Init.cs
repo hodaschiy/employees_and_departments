@@ -17,10 +17,10 @@ namespace WebApp.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     ChiefId = table.Column<int>(type: "integer", nullable: true),
                     ParentId = table.Column<int>(type: "integer", nullable: true),
-                    Tree = table.Column<string>(type: "text", nullable: true),
+                    Tree = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -59,12 +59,11 @@ namespace WebApp.Migrations
                         principalColumn: "Id");
                 });
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Department_Employee_ChiefId",
+            migrationBuilder.CreateIndex(
+                name: "IX_Department_ChiefId",
                 table: "Department",
                 column: "ChiefId",
-                principalTable: "Employee",
-                principalColumn: "Id");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Department_ParentId",
@@ -81,43 +80,67 @@ namespace WebApp.Migrations
                 name: "IX_Employee_DepartmentId",
                 table: "Employee",
                 column: "DepartmentId");
-            migrationBuilder.Sql("create or replace function public.\"trg_fn_department_before_ins_upd\" ()" +
-                "                   returns trigger as " +
-                "                   $$" +
-                "                   begin " +
-                "                       if not new.\"ParentId\" is null then " +
-                "                           new.\"Tree\" = (select prn.\"Tree\" from public.\"Department\" prn where prn.\"Id\" = new.\"ParentId\" limit 1) || '.' || new.\"Name\"; " +
-                "                       else" +
-                "                           new.\"Tree\" = new.\"Name\";" +
-                "                       end if; " +
-                "                       update public.\"Employee\" " +
-                "                       set \"Tree\" = new.\"Tree\" " +
-                "                       where \"DepartmentId\" = new.\"Id\"; " +
-                "                       return new; " +
-                "                   end;" +
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Department_Employee_ChiefId",
+                table: "Department",
+                column: "ChiefId",
+                principalTable: "Employee",
+                principalColumn: "Id");
+
+            migrationBuilder.Sql("create or replace function public.\"trg_fn_department_before_ins_upd\" ()\n" +
+                "                   returns trigger as \n" +
+                "                   $$\n" +
+                "                   begin \n" +
+                "                       if lower(TG_OP) = 'insert' or (new.\"ParentId\" != old.\"ParentId\") or (old.\"Name\" != new.\"Name\") then\n" +
+                "                           if not new.\"ParentId\" is null then \n" +
+                "                               new.\"Tree\" = (select prn.\"Tree\" from public.\"Department\" prn where prn.\"Id\" = new.\"ParentId\" limit 1) || '.' || new.\"Name\"; \n" +
+                "                           else\n" +
+                "                               new.\"Tree\" = new.\"Name\";\n" +
+                "                           end if; \n" +
+                "                       elsif new.\"Tree\" is null then\n" +
+                "                           new.\"Tree\" = old.\"Tree\";\n" +
+                "                       end if;\n" +
+                "                                                  \n" +
+                "                       update public.\"Employee\" \n" +
+                "                       set \"Tree\" = new.\"Tree\" \n" +
+                "                       where \"DepartmentId\" = new.\"Id\"; \n" +
+                "                       \n" +
+                "                       if lower(TG_OP) = 'update' and ((old.\"ParentId\" != new.\"ParentId\") or (old.\"Name\" != new.\"Name\")) then\n" +
+                "                           update public.\"Department\" dep\n" +
+                "                           set \"Tree\" = replace(dep.\"Tree\", old.\"Tree\", new.\"Tree\")\n" +
+                "                           where dep.\"Tree\" like (old.\"Tree\" || '.%');\n" +
+                "                       end if;\n" +
+                "                                                                               \n" +
+                "                       return new; \n" +
+                "                   end;\n" +
                 "                   $$ language plpgsql;", true);
-            migrationBuilder.Sql("create or replace function public.\"trg_fn_employee_before_ins_upd\" ()" +
-                "                   returns trigger as" +
-                "                   $$" +
-                "                   begin" +
-                "                   new.\"Tree\" = (select dep.\"Tree\" from public.\"Department\" dep where dep.\"Id\" = new.\"DepartmentId\" limit 1);" +
-                "                   return new;" +
-                "                   end;" +
+            migrationBuilder.Sql("create or replace function public.\"trg_fn_employee_before_ins_upd\" ()\n" +
+                "                   returns trigger as\n" +
+                "                   $$\n" +
+                "                   begin\n" +
+                "                   new.\"Tree\" = (select dep.\"Tree\" from public.\"Department\" dep where dep.\"Id\" = new.\"DepartmentId\" limit 1);\n" +
+                "                   return new;\n" +
+                "                   end;\n" +
                 "                   $$ language plpgsql;", true);
 
-            migrationBuilder.Sql("  create trigger \"trg_fn_department_before_ins_upd\"" +
-                "                   before insert or update" +
-                "                   on public.\"Department\"" +
+            migrationBuilder.Sql("  create trigger \"trg_fn_department_before_ins_upd\"\n" +
+                "                   before insert or update\n" +
+                "                   on public.\"Department\"\n" +
                 "                   for each row execute function public.\"trg_fn_department_before_ins_upd\"();", true);
-            migrationBuilder.Sql("  create trigger \"trg_fn_employee_before_ins_upd\"" +
-                "                   before insert or update" +
-                "                   on public.\"Employee\"" +
+            migrationBuilder.Sql("  create trigger \"trg_fn_employee_before_ins_upd\"\n" +
+                "                   before insert or update\n" +
+                "                   on public.\"Employee\"\n" +
                 "                   for each row execute function public.\"trg_fn_employee_before_ins_upd\"();", true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Department_Employee_ChiefId",
+                table: "Department");
+
             migrationBuilder.DropTable(
                 name: "Employee");
 
