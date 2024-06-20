@@ -1,4 +1,4 @@
-﻿@model WebApp.Models.Department
+﻿@model WebApp.Models.DepartmentEditView
 
 @{
     ViewData["Title"] = "Edit";
@@ -6,40 +6,119 @@
 
 <h1>Edit</h1>
 
-<h4>Department</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ChiefId" class="control-label"></label>
-                <select asp-for="ChiefId" class="form-control" asp-items="ViewBag.ChiefId"></select>
-                <span asp-validation-for="ChiefId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ParentId" class="control-label"></label>
-                <select asp-for="ParentId" class="form-control" asp-items="ViewBag.ParentId"></select>
-                <span asp-validation-for="ParentId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Tree" class="control-label"></label>
-                <input asp-for="Tree" class="form-control" />
-                <span asp-validation-for="Tree" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+<div>
+    <h4>Department</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Department.Id" />
+                <div class="form-group">
+                    <label asp-for="Department.Name" class="control-label"></label>
+                    <input asp-for="Department.Name" class="form-control" />
+                    <span asp-validation-for="Department.Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Department.ChiefId" class="control-label"></label>
+                    <select asp-for="Department.ChiefId" class="form-control" asp-items="Model.DepEmpls"></select>
+                    <span asp-validation-for="Department.ChiefId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Department.ParentId" class="control-label"></label>
+                    <select asp-for="Department.ParentId" class="form-control" asp-items="Model.PotentialParentDeps"></select>
+                    <span asp-validation-for="Department.ParentId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Department.Tree" class="control-label"></label>
+                    <input disabled asp-for="Department.Tree" class="form-control" />
+                    <span asp-validation-for="Department.Tree" class="text-danger"></span>
+                </div>
 
+                </br>
+
+                <div class="form-group">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    </br>
+    <form asp-action="AddChild">
+        <div class="form-group">
+            <select name="newChild" asp-items="Model.Departments">
+                <option disabled> выберите департамент для переноса в текущий </option>
+            </select>
+            <input type="hidden" class="form-control" name="id" value="@Model.Department.Id" />
+            <input type="hidden" class="form-control" name="VT" value="2"/>
+
+            <input type="submit" value="Add" class="btn btn-primary" />
+        </div>
+    </form>
+    </br>
+
+    @if (Model.Department.HChildDepartments.Count > 0) {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Tree</th>
+                    <th>Chief</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Department.HChildDepartments)
+                {
+                    <tr>
+                        <td style=" padding-left : @((item.Level-Model.Department.Level)*15)px">@item.Name</td>
+                        <td>@item.Tree</td>
+                        <td>@item.Chief.Name</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                            <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    </br>
+
+    <select asp-items="Model.Employees">
+        <option disabled> выберите сотрудника для перевода в департамент </option>
+    </select>
+
+    </br>
+
+    @if (Model.Department.Employees.Count() > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Department.Employees)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>
+                            <a asp-action="Edit" asp-controller="Employee" asp-route-id="@item.Id">Edit</a> |
+                            <a asp-action="Details" asp-controller="Employee" asp-route-id="@item.Id">Details</a> |
+                            <a asp-action="Delete" asp-controller="Employee" asp-route-id="@item.Id">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
 <div>
     <a asp-action="Index">Back to List</a>
 </div>

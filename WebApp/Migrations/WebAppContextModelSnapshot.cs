@@ -33,6 +33,9 @@ namespace WebApp.Migrations
                     b.Property<int?>("ChiefId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("Level")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)

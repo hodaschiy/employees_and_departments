@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Runtime.Intrinsics.Arm;
 using WebApp.Data;
 
@@ -16,8 +17,7 @@ namespace WebApp.Models
         [ForeignKey ("Department")]
         public int? ParentId { get; set; }
         public string? Tree { get; set; }
-        [NotMapped]
-        public int? Level { get => Tree!.Where(x => x == '.').Count(); }
+        public int? Level { get; set; }
         public virtual Employee? Chief { get; set; }
         public virtual ICollection<Department> ChildDepartments { get; set; } = new List<Department>();
         public virtual Department? Parent { get; set; }
@@ -48,5 +48,14 @@ namespace WebApp.Models
         {
             HChildDepartments = context.Department.Where(dep => dep.Tree.StartsWith(Tree+'.')).OrderBy(dep => dep.Tree).Include(d => d.Chief).ToList();
         }
+    }
+
+    public class DepartmentEditView
+    {
+        public DepartmentView Department { get; set; }
+        public SelectList? DepEmpls { get; set; }
+        public SelectList? Departments { get; set; }
+        public SelectList? Employees { get; set; }
+        public SelectList? PotentialParentDeps {  get; set; } 
     }
 }

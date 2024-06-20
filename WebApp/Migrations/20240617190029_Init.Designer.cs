@@ -12,7 +12,7 @@ using WebApp.Data;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(WebAppContext))]
-    [Migration("20240616174440_Init")]
+    [Migration("20240617190029_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -34,6 +34,9 @@ namespace WebApp.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("ChiefId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Level")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")

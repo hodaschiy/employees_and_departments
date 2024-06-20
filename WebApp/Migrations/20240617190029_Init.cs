@@ -20,7 +20,8 @@ namespace WebApp.Migrations
                     Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     ChiefId = table.Column<int>(type: "integer", nullable: true),
                     ParentId = table.Column<int>(type: "integer", nullable: true),
-                    Tree = table.Column<string>(type: "text", nullable: true)
+                    Tree = table.Column<string>(type: "text", nullable: true),
+                    Level = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -87,6 +88,7 @@ namespace WebApp.Migrations
                 column: "ChiefId",
                 principalTable: "Employee",
                 principalColumn: "Id");
+            migrationBuilder.Sql("create extension ltree;");
 
             migrationBuilder.Sql("create or replace function public.\"trg_fn_department_before_ins_upd\" ()\n" +
                 "                   returns trigger as \n" +
@@ -101,7 +103,7 @@ namespace WebApp.Migrations
                 "                       elsif new.\"Tree\" is null then\n" +
                 "                           new.\"Tree\" = old.\"Tree\";\n" +
                 "                       end if;\n" +
-                "                                                  \n" +
+                "                       new.\"Level\" = nlevel(new.\"Tree\"::ltree);\n" +
                 "                       update public.\"Employee\" \n" +
                 "                       set \"Tree\" = new.\"Tree\" \n" +
                 "                       where \"DepartmentId\" = new.\"Id\"; \n" +
@@ -109,6 +111,7 @@ namespace WebApp.Migrations
                 "                       if lower(TG_OP) = 'update' and ((old.\"ParentId\" != new.\"ParentId\") or (old.\"Name\" != new.\"Name\")) then\n" +
                 "                           update public.\"Department\" dep\n" +
                 "                           set \"Tree\" = replace(dep.\"Tree\", old.\"Tree\", new.\"Tree\")\n" +
+                "                               ,\"Level\" = nlevel(replace(dep.\"Tree\", old.\"Tree\", new.\"Tree\")::ltree)" +
                 "                           where dep.\"Tree\" like (old.\"Tree\" || '.%');\n" +
                 "                       end if;\n" +
                 "                                                                               \n" +

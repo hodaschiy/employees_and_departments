@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Packaging;
 using WebApp.Data;
 using WebApp.Models;
+using static WebApp.Controllers.DepartmentsController;
 
 namespace WebApp.Controllers
 {
@@ -81,14 +83,20 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            var department = await _context.Department.FindAsync(id);
+            var department = await _context.Department.Where(dep => dep.Id == id).Include(dep => dep.Employees).FirstOrDefaultAsync();
             if (department == null)
             {
                 return NotFound();
             }
-            ViewData["ChiefId"] = new SelectList(_context.Employee, "Id", "Id", department.ChiefId);
-            ViewData["ParentId"] = new SelectList(_context.Department, "Id", "Id", department.ParentId);
-            return View(department);
+            
+            return View(new DepartmentEditView() { 
+                                                    Department = new DepartmentView(department, _context), 
+                                                    DepEmpls = new SelectList(department.Employees.Select(emp => new { emp.Id, emp.Name }), "Id", "Name"),
+                                                    Departments = new SelectList(_context.Department.Where(dep => !(dep.Level == department.Level+1 && dep.Tree!.StartsWith(department.Tree!)) && !(department.Tree!.StartsWith(dep.Tree)) ).Select(dep => new { dep.Id, dep.Name }).ToList(), "Id", "Name"), 
+                                                    Employees = new SelectList(_context.Employee.Where(emp => emp.Department != department).Select(emp => new { emp.Id, emp.Name }).ToList(), "Id", "Name"),
+                                                    PotentialParentDeps = new SelectList(_context.Department.Where(dep => !(dep.Tree!.StartsWith(department.Tree!)) && dep != department).Select(dep => new { dep.Id, dep.Name }).ToList(), "Id", "Name")
+            } 
+            );
         }
 
         // POST: Departments/Edit/5
@@ -128,6 +136,49 @@ namespace WebApp.Controllers
             return View(department);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddChild(int id, int newChild, ViewType VT)
+        {
+            var childDep = await _context.Department.FindAsync(newChild);
+
+            if (childDep == null)
+            {
+                return NotFound();
+            }
+
+            var department = await _context.Department.FindAsync(id);
+
+            if (department == null)
+            {
+                return NotFound();
+            }
+
+            childDep.Parent = department;
+
+            _context.Update(childDep);
+            await _context.SaveChangesAsync();
+            var routeValues = new RouteValueDictionary();
+            routeValues.Add("id", id);
+
+            switch (VT)
+            {
+                case ViewType.Self:
+                    routeValues.Add("department", department);
+                    return RedirectToAction(nameof(Edit), routeValues);
+                    break;
+                case ViewType.Child:
+                    routeValues.Add("department", childDep);
+                    return RedirectToAction(nameof(Edit), routeValues);
+                    break;
+                default:
+                    return RedirectToAction(nameof(Index));
+                    break;
+            }
+
+
+        }
+
         // GET: Departments/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -159,7 +210,7 @@ namespace WebApp.Controllers
             {
                 _context.Department.Remove(department);
             }
-
+            
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -167,6 +218,13 @@ namespace WebApp.Controllers
         private bool DepartmentExists(int id)
         {
             return _context.Department.Any(e => e.Id == id);
+        }
+
+        public enum ViewType
+        {
+            Self = 1,
+            Child = 2,
+            Parent = 3
         }
     }
 }
